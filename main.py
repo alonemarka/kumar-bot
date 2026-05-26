@@ -82,7 +82,7 @@ def start(message):
 
     photo_url = 'https://r.resimlink.com/qRPiMK67Bjg.jpg'
     caption = (
-        "*🎉 Merhaba usom oyun Botumuza hoş geldin.*\n\n"
+        "*🎉 Merhaba atattv44 #VİZYON oyun Botumuza hoş geldin.*\n\n"
         "*🎯 Başlangıç Hediyesi:* 100000 TL 🏆\n\n"
         "*🎲 Kazanmaya hazır mısın? Komutları dene ve şansını test et!*"
     )
