@@ -8,12 +8,13 @@ import os
 # ================== AYARLAR ==================
 TOKEN = os.getenv("TOKEN") or "8944653688:AAGDQhWDQSxNL3qoLD3YAeVKNXyiFw6NEPg"
 
-# Birden fazla admin ekleyebilirsin
-ADMIN_IDS = [8773299135, 8973632679, 8230461239]   # Buraya diğer admin ID'lerini ekle
+# Birden fazla admin (DÜZELTİLDİ)
+ADMIN_IDS = [8773299135, 8973632679, 8230461239]
 
 bot = telebot.TeleBot(TOKEN)
 
-thomas = ADMIN_IDS  # Eski thomas listesi yerine ADMIN_IDS kullanıyoruz
+thomas = ADMIN_IDS   # Eski thomas yerine bunu kullanıyoruz
+
 param = 'balances.json'
 kullanici_abelerim = 'users.txt'
 
