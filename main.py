@@ -8,11 +8,12 @@ import os
 # ================== AYARLAR ==================
 TOKEN = os.getenv("TOKEN") or "8944653688:AAGDQhWDQSxNL3qoLD3YAeVKNXyiFw6NEPg"
 
-# Birden fazla admin ekleyebilirsiniz
-ADMIN_IDS = [8773299135, 8973632679, 8230461239]   # Buraya istediğin kadar ID ekle
+# Birden fazla admin ekleyebilirsin
+ADMIN_IDS = [8773299135, 8973632679, 8230461239]   # Buraya diğer admin ID'lerini ekle
 
 bot = telebot.TeleBot(TOKEN)
 
+thomas = ADMIN_IDS  # Eski thomas listesi yerine ADMIN_IDS kullanıyoruz
 param = 'balances.json'
 kullanici_abelerim = 'users.txt'
 
@@ -88,7 +89,6 @@ def start(message):
 
     bot.send_photo(message.chat.id, photo_url, caption=caption, reply_markup=markup, parse_mode="Markdown")
 
-# ================== KOMUTLAR ==================
 @bot.callback_query_handler(func=lambda call: call.data == "komutlar")
 def show_commands(call):
     commands_text = (
@@ -101,10 +101,11 @@ def show_commands(call):
         "     ◦ *Kaybederseniz tüm parayı kaybedersiniz.*\n\n"
         "🔹 */zenginler* - 🏆 *En zengin kullanıcıları gösterir.*\n\n"
         "🔹 */bonus* - 🎁 *Günlük 500,000 TL bonus alırsınız.*\n\n"
-        "🔹 */gonder <user_id> <miktar>* - 💸 *Belirtilen kullanıcıya para gönderirsiniz.*\n\n"
-        "🔹 */kazi* - ⛏️ *Kazı yaparak altın bulunur.*\n\n"
-        "🔹 */donustur* - 🔄 *Altınları TL'ye dönüştürür.*\n\n"
-        "⚠️ *Dikkat:* Komutlar arasında 5 saniye beklemelisiniz."
+        "🔹 */gonder <user_id> <miktar>* - 💸 *Belirtilen kullanıcıya belirtilen miktarda para gönderirsiniz.*\n\n"
+        "🔹 */kazi* - ⛏️ *Kazı yaparak 0 ile 10 arasında altın bulunur.*\n\n"
+        "🔹 */donustur* - 🔄 *Bulunan altınları TL’ye dönüştürür (1 ALTIN = 10000 TL).*\n\n"
+        "⚠️ *Dikkat:* *Komutlar arasında 5 saniye beklemelisiniz.*\n"
+        "*🎯 İyi şanslar!* 🍀"
     )
 
     markup = types.InlineKeyboardMarkup()
@@ -143,15 +144,203 @@ def go_back(call):
         parse_mode="Markdown"
     )
 
-# ================== DİĞER KOMUTLAR (Aynı kaldı) ==================
-# ... (kodunun geri kalanı aynı)
+@bot.message_handler(commands=['bakiye'])
+def bakiyemmvarmi(message):
+    user_id = str(message.from_user.id)
+    if user_id not in bakiyem:
+        bot.reply_to(message, '🛑 Kayıtlı değilsiniz! Lütfen önce /start komutunu kullanın.', parse_mode="Markdown")
+        return
+    balance = bakiyem[user_id]
+    bot.reply_to(message, f"*💰 Güncel Bakiyeniz:* {balance} TL", parse_mode="Markdown")
+
+@bot.message_handler(commands=['risk'])
+def risk(message):
+    user_id = str(message.from_user.id)
+    if flodvarmi(user_id):
+        bot.reply_to(message, "*⏳ 5 saniye bekleyin ve tekrar deneyin.*", parse_mode="Markdown")
+        return
+    if user_id not in bakiyem:
+        bot.reply_to(message, '*🛑 Kayıtlı değilsiniz! Lütfen önce /start komutunu kullanın*.', parse_mode="Markdown")
+        return
+    parts = message.text.split()
+    if len(parts) != 2 or not parts[1].isdigit():
+        bot.reply_to(message, '*⚠️ Geçersiz kullanım!*\n\n🔹 *Doğru Kullanım:* /risk 1000', parse_mode="Markdown")
+        return
+    risk_amount = int(parts[1])
+    if risk_amount <= 0:
+        bot.reply_to(message, '*⚠️ Paranız 0’dan küçük olamaz!*', parse_mode="Markdown")
+        return
+    if bakiyem[user_id] < risk_amount:
+        bot.reply_to(message, f'*❌ Yetersiz bakiye!*\n\n💰 *Mevcut Bakiye:* {bakiyem[user_id]} *TL*', parse_mode="Markdown")
+        return
+    if random.random() < 0.7:
+        winnings = risk_amount * 2
+        bakiyem[user_id] += winnings - risk_amount
+        bot.reply_to(message, f'*💰 Kazandınız!* ✅ {winnings} *TL kazandınız.*\n\n💰 *Yeni Bakiye:* {bakiyem[user_id]} *TL*', parse_mode="Markdown")
+    else:
+        bakiyem[user_id] -= risk_amount
+        bot.reply_to(message, f'*💥 Kaybettiniz!* ❌ {risk_amount} *TL kaybettiniz.*\n\n💰 *Yeni Bakiye:* {bakiyem[user_id]} *TL*', parse_mode="Markdown")
+    parayi_kaydet_abi()
+
+@bot.message_handler(commands=['puan'])
+def puan(message):
+    kaydettim(message.from_user.id)
+    user_id = str(message.from_user.id)
+    
+    if user_id not in thomas:
+        bot.reply_to(message, '🚫 Bu komutu kullanmaya yetkiniz yok.', parse_mode="Markdown")
+        return    
+    
+    try:
+        s = message.text.split()
+        if len(s) < 3:
+            bot.reply_to(message, "*Kullanım: /puan <kullanıcı_id> <puan>*", parse_mode="Markdown")
+            return       
+
+        target_id = str(s[1])
+        puan_value = int(s[2])
+
+        bakiyem[target_id] = bakiyem.get(target_id, 0) + puan_value
+
+        parayi_kaydet_abi()
+        bot.reply_to(message, f"{target_id} kullanıcısının puanı {puan_value} olarak değiştirildi 🥷🏻💰", parse_mode="Markdown")
+
+    except ValueError:
+        bot.reply_to(message, "⚠️ Lütfen geçerli bir sayı girin!", parse_mode="Markdown")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Beklenmedik bir hata oluştu: {str(e)}", parse_mode="Markdown")
+
+def bakiyedegis(balance):
+    if balance >= 1e9:
+        return f"{balance / 1e9:.2f} milyar TL"
+    elif balance >= 1e6:
+        return f"{balance / 1e6:.2f} milyon TL"
+    else:
+        return f"{balance:.2f} TL"
+
+@bot.message_handler(commands=['zenginler'])
+def lider_kim(message):
+    kaydettim(message.from_user.id)
+    user_id = str(message.from_user.id)
+    if flodvarmi(user_id):
+        bot.reply_to(message, "𝟓 𝐒𝐚𝐧𝐢𝐲𝐞 𝐛𝐞𝐤𝐥𝐞 𝐭𝐞𝐤𝐫𝐚𝐫 𝐚𝐭.", parse_mode="Markdown")
+        return
+    sorted_balances = sorted(bakiyem.items(), key=lambda x: x[1], reverse=True)
+    leaderboard_message = "🏆 𝐄𝐧 𝐈𝐲𝐢 𝟏𝟎 𝐙𝐞𝐧𝐠𝐢𝐧:\n\n"
+    for i, (uid, balance) in enumerate(sorted_balances[:10], start=1):
+        try:
+            user = bot.get_chat(uid)
+            user_name = user.first_name if user.first_name else "Bilinmiyor"
+            formatted_balance = bakiyedegis(balance)
+            leaderboard_message += f"🎖️ {i}. {user_name} ⇒ {formatted_balance}\n"
+        except Exception as e:
+            leaderboard_message += f"🎖️ {i}. Bilinmiyor ⇒ {bakiyedegis(balance)}\n"
+    bot.reply_to(message, leaderboard_message, parse_mode="Markdown")
+
+@bot.message_handler(commands=['gonder'])
+def bakiye_gonder(message):
+    kaydettim(message.from_user.id)
+    user_id = str(message.from_user.id)
+    if user_id not in bakiyem:
+        bakiyem[user_id] = 100 
+    if message.reply_to_message:
+        try:
+            parts = message.text.split()
+            amount = int(parts[1])  
+            target_id = str(message.reply_to_message.from_user.id) 
+        except (IndexError, ValueError):
+            bot.reply_to(message, '*Lütfen geçerli bir format kullanın. Kullanım: /gonder <miktar>*', reply_to_message_id=message.message_id, parse_mode="Markdown")
+            return
+    else:
+        try:
+            parts = message.text.split()
+            amount = int(parts[1])  
+            target_id = str(parts[2])  
+        except (IndexError, ValueError):
+            bot.reply_to(message, '*Lütfen geçerli bir format kullanın. Kullanım:* `/gonder <miktar> <user_id>`', reply_to_message_id=message.message_id, parse_mode="Markdown")
+            return
+    if amount <= 0:
+        bot.reply_to(message, '* 0 dan büyük *', reply_to_message_id=message.message_id, parse_mode="Markdown")
+        return
+    if bakiyem[user_id] < amount:
+        bot.reply_to(message, '*Yetersiz bakiye. kardeşim fakirmisin  🥷🏻💰😂*', reply_to_message_id=message.message_id, parse_mode="Markdown")
+        return
+    bakiyem[user_id] -= amount
+    if target_id not in bakiyem:
+        bakiyem[target_id] = 100   
+    bakiyem[target_id] += amount
+    parayi_kaydet_abi()
+    bot.reply_to(message, f'*Başarıyla ✅ {target_id} kullanıcısına {amount} TL gönderildi. Yeni bakiye:* {bakiyem[user_id]} *TL*', reply_to_message_id=message.message_id, parse_mode="Markdown")
+
+@bot.message_handler(commands=['bonus'])
+def bonus_ver(message):
+    user_id = str(message.from_user.id)
+    if user_id not in bakiyem:
+        bakiyem[user_id] = 100  
+    current_time = time.time()
+    if user_id in bonus_bakiye:
+        time_diff = current_time - bonus_bakiye[user_id]
+        if time_diff < 10800:  
+            remaining_time = 10800 - time_diff
+            remaining_hours = remaining_time // 3600
+            remaining_minutes = (remaining_time % 3600) // 60
+            bot.reply_to(message, f'*Bonusunuzu almak için {remaining_hours} saat {remaining_minutes} dakika daha beklemeniz gerekiyor😐.*', parse_mode="Markdown")
+            return
+    bakiyem[user_id] += 500000
+    bonus_bakiye[user_id] = current_time  
+    parayi_kaydet_abi()
+    bot.reply_to(message, f'*Tebrikler ✅ 500,000 TL 💰 bonus kazandınız.\n 💰 Yeni bakiye:* `{bakiyem[user_id]}` *TL*', parse_mode="Markdown")
+    
+@bot.message_handler(commands=['kayipbonus'])
+def bonusabem(message):
+    user_id = str(message.from_user.id)    
+    if user_id not in thomas:
+        bot.reply_to(message, '*Bu komut için yetkin yok. knk*', reply_to_message_id=message.message_id, parse_mode="Markdown")
+        return    
+    for target_user_id in bakiyem:
+        bakiyem[target_user_id] += 300000
+    parayi_kaydet_abi()
+    bot.reply_to(message, '* Herkese  300,000 TL bonus  gönderildi✅.*', parse_mode="Markdown")
+
+@bot.message_handler(commands=['kazi'])
+def kazi(message):
+    user_id = str(message.from_user.id)
+    
+    if user_id not in altinim:
+        altinim[user_id] = 0.0
+    
+    if random.random() < 0.4:
+        altin_bul = 0.0
+    else:
+        altin_bul = round(random.uniform(0, 10), 2)
+    altinim[user_id] += altin_bul
+    if altin_bul == 0.0:
+        response = "*Kazı yaptınız ⛏️ \nAma Altın bulamadınız, tekrar kazmayı deneyin ❌*"
+    else:
+        response = f"*Kazı yaptınız ⛏️  \n 🥷🏻Maşallah Kral Bu kadar ALTIN  buldun * `{altin_bul} ALTIN` ✅ \n*🎗️ Toplam ALTIN  bakiyeniz:* `{altinim[user_id]} ALTIN`"
+    bot.reply_to(message, response, parse_mode="Markdown")
+
+@bot.message_handler(commands=['donustur'])
+def donustur(message):
+    user_id = str(message.from_user.id)
+    if user_id not in altinim or altinim[user_id] <= 0:
+        bot.reply_to(message, "*Altın bakiyeniz yok. Önce altın kazın!*", parse_mode="Markdown")
+        return
+    conversion_rate = 10000
+    gold_amount = altinim[user_id]
+    tl_amount = gold_amount * conversion_rate
+    altinim[user_id] = 0
+    if user_id not in bakiyem:
+        bakiyem[user_id] = 100000
+    bakiyem[user_id] += tl_amount
+    parayi_kaydet_abi()    
+    bot.reply_to(message, f"*Altınlarınız `{gold_amount} ALTIN` TL'ye dönüştürüldü!*\n*Elde edilen TL:* `{tl_amount}` TL\n*Yeni TL bakiyeniz:* `{bakiyem[user_id]}` TL", parse_mode="Markdown")
 
 print("🤖 Bot çalışıyor...")
 if __name__=='__main__':
     while True:
         try:
             print("Bot çalışıyor...")
-            bot.polling(non_stop=True, timeout=60)
+            bot.polling(non_stop=True,timeout=60)
         except Exception as e:
-            print(e)
-            time.sleep(3)
+            print(e); time.sleep(3)
