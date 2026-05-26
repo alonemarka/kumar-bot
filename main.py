@@ -5,15 +5,13 @@ import random
 import json
 import os
 
-# ================== AYARLAR ==================
-TOKEN = os.getenv("TOKEN") or "8944653688:AAGDQhWDQSxNL3qoLD3YAeVKNXyiFw6NEPg"
-
-# Birden fazla admin ekleyebilirsin
-ADMIN_IDS = [8230461239]   # Buraya diğer admin ID'lerini ekle
+TOKEN = os.getenv("TOKEN")
+if not TOKEN:
+    TOKEN = "8944653688:AAGDQhWDQSxNL3qoLD3YAeVKNXyiFw6NEPg"
 
 bot = telebot.TeleBot(TOKEN)
 
-thomas = ADMIN_IDS  # Eski thomas listesi yerine ADMIN_IDS kullanıyoruz
+thomas = ['8230461239']
 param = 'balances.json'
 kullanici_abelerim = 'users.txt'
 
@@ -53,12 +51,8 @@ def flodvarmi(user_id):
 def logkontrol(user_id):
     print(f"[LOG] Kullanıcı {user_id} komut kullandı.")
 
-def is_admin(user_id):
-    return user_id in ADMIN_IDS
-
 bakiyem = bakiyeyebak()
 
-# ================== START ==================
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = str(message.from_user.id)
@@ -73,16 +67,16 @@ def start(message):
 
     markup = types.InlineKeyboardMarkup()
     markup.row(
-        types.InlineKeyboardButton("👤 Sahibim", url="https://t.me/aloneiste"),
-        types.InlineKeyboardButton("📢 Kanal", url="https://t.me/illegalabiyim"),
-        types.InlineKeyboardButton("👤 Gruplar", url="https://t.me/atattv44yedek")
+        types.InlineKeyboardButton("👤 Sahibim", url="https://t.me/alonehazretleri"),
+        types.InlineKeyboardButton("📢 Kanal", url="https://t.me/alonetools"),
+        types.InlineKeyboardButton("👤 Gruplar", url="https://t.me/atattv44vizyon")
     )
     markup.row(types.InlineKeyboardButton("📖 Komutlar", callback_data="komutlar"))
-    markup.add(types.InlineKeyboardButton("➕ Beni Gruba Ekle", url="https://t.me/aloneoyunbot?startgroup=new"))
+    markup.add(types.InlineKeyboardButton("➕ Beni Gruba Ekle", url="https://t.me/atattv44oyunbot?startgroup=new"))
 
     photo_url = 'https://r.resimlink.com/qRPiMK67Bjg.jpg'
     caption = (
-        "*🎉 Merhaba usom oyun Botumuza hoş geldin.*\n\n"
+        "*🎉 Merhaba atattv44 #VİZYON oyun Botumuza hoş geldin.*\n\n"
         "*🎯 Başlangıç Hediyesi:* 100000 TL 🏆\n\n"
         "*🎲 Kazanmaya hazır mısın? Komutları dene ve şansını test et!*"
     )
@@ -122,19 +116,19 @@ def show_commands(call):
 @bot.callback_query_handler(func=lambda call: call.data == "geri")
 def go_back(call):
     caption = (
-        "*🎉 Merhaba usom oyun Botumuza hoş geldin.*\n\n"
+        "*🎉 Merhaba atattv44 #VİZYON oyun Botumuza hoş geldin.*\n\n"
         "*🎯 Başlangıç Hediyesi:* 100000 TL 🏆\n\n"
         "*🎲 Kazanmaya hazır mısın? Komutları dene ve şansını test et!*"
     )
 
     markup = types.InlineKeyboardMarkup()
     markup.row(
-        types.InlineKeyboardButton("👤 Sahibim", url="https://t.me/aloneiste"),
-        types.InlineKeyboardButton("📢 Kanal", url="https://t.me/illegalabiyim"),
-        types.InlineKeyboardButton("👤 Gruplar", url="https://t.me/atattv44yedek")
+        types.InlineKeyboardButton("👤 Sahibim", url="https://t.me/alonehazretleri"),
+        types.InlineKeyboardButton("📢 Kanal", url="https://t.me/alonetools"),
+        types.InlineKeyboardButton("👤 Gruplar", url="https://t.me/atattv44vizyon")
     )
     markup.row(types.InlineKeyboardButton("📖 Komutlar", callback_data="komutlar"))
-    markup.add(types.InlineKeyboardButton("➕ Beni Gruba Ekle", url="https://t.me/aloneoyunbot?startgroup=new"))
+    markup.add(types.InlineKeyboardButton("➕ Beni Gruba Ekle", url="https://t.me/atattv44oyunbot?startgroup=new"))
 
     bot.edit_message_caption(
         caption=caption,
