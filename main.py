@@ -122,7 +122,7 @@ def show_commands(call):
 @bot.callback_query_handler(func=lambda call: call.data == "geri")
 def go_back(call):
     caption = (
-        "*🎉 Merhaba usom oyun Botumuza hoş geldin.*\n\n"
+        "*🎉 Merhaba atattv44 #vizyon oyun Botumuza hoş geldin.*\n\n"
         "*🎯 Başlangıç Hediyesi:* 100000 TL 🏆\n\n"
         "*🎲 Kazanmaya hazır mısın? Komutları dene ve şansını test et!*"
     )
