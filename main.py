@@ -13,7 +13,7 @@ ADMIN_IDS = [8773299135, 8973632679, 8230461239]
 
 bot = telebot.TeleBot(TOKEN)
 
-thomas = ADMIN_IDS   # Eski thomas yerine bunu kullanıyoruz
+is_admin() = ADMIN_IDS   # Eski thomas yerine bunu kullanıyoruz
 
 param = 'balances.json'
 kullanici_abelerim = 'users.txt'
@@ -188,7 +188,7 @@ def puan(message):
     kaydettim(message.from_user.id)
     user_id = str(message.from_user.id)
     
-    if user_id not in thomas:
+    if user_id not in is_admin():
         bot.reply_to(message, '🚫 Bu komutu kullanmaya yetkiniz yok.', parse_mode="Markdown")
         return    
     
@@ -295,7 +295,7 @@ def bonus_ver(message):
 @bot.message_handler(commands=['kayipbonus'])
 def bonusabem(message):
     user_id = str(message.from_user.id)    
-    if user_id not in thomas:
+    if user_id not in is_admin():
         bot.reply_to(message, '*Bu komut için yetkin yok. knk*', reply_to_message_id=message.message_id, parse_mode="Markdown")
         return    
     for target_user_id in bakiyem:
